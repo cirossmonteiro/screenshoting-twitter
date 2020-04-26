@@ -77,6 +77,8 @@
 
 # imgkit.from_url('https://twitter.com/filgmartin', 'out1232.jpg')
 import time, datetime, os
+from os import listdir
+from os.path import isfile, join
 
 import requests, bs4
 
@@ -85,7 +87,10 @@ if not os.path.exists(main_folder):
     print('Creating folder: ', main_folder)
     os.makedirs(main_folder)
 
-accounts = ['filgmartin']
+accounts = [
+    'filgmartin',
+    'CarlosBolsonaro'
+    ]
 
 for account in accounts:
     account_folder = '{}/{}'.format(main_folder, account)
@@ -93,18 +98,53 @@ for account in accounts:
         print('Creating folder: ', account_folder)
         os.makedirs(account_folder)
 
+log_file = 'main_log.txt'
+
+def log(message):
+    fh = open(log_file, 'a')
+    fh.write(datetime.datetime.now().strftime("%Y-%m-%d %H:%M") + ': ' + message + '\n')
+    fh.close()
+    print(message)
+
+
 while True:
     for account in accounts:
         response = requests.get('https://twitter.com/'+account)
         html_code = response.text
         instant = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M")
+        date_nums = instant.split('_')
+        account_folder = '{}/{}'.format(main_folder, account)
+        path = account_folder + '/'
+        for date_num in date_nums:
+            path += date_num + '/'
+            if not os.path.exists(path):
+                log('Creating folder: ' + path)
+                os.makedirs(path)
         soup = bs4.BeautifulSoup(html_code, 'html.parser')
         # tweets = soup.find_all(attrs={'class': 'js-tweet-text-container'})
         # print(len(html_code), len(tweets), html_code.count('js-tweet-text-container'))
         # for tweet in tweets:
         #     print(tweet.get_text())
-        account_folder = '{}/{}'.format(main_folder, account)
+
+        # saving screenshot to account folder
         fh = open('{}/{}.html'.format(account_folder, instant),'w')
         fh.write(html_code)
         fh.close()
+
+        # saving screenshot to date folder
+        fh = open('{}/index.html'.format(path),'w')
+        fh.write(html_code)
+        fh.close()
+
+        # making index.html to account folder
+        html_code = '<html><body><ol>{}</ol></body></html>'
+        onlyfiles = [f for f in listdir(account_folder) if isfile(join(account_folder, f))]
+        onlyfiles_code = ''
+        for file in onlyfiles:
+            onlyfiles_code += '<li><a href=\'{}\'>{}</a></li>'.format(file, file)
+        html_code = html_code.format(onlyfiles_code)
+        fh = open('{}/index.html'.format(account_folder, instant),'w')
+        fh.write(html_code)
+        fh.close()
+
     time.sleep(60)
