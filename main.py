@@ -82,29 +82,32 @@ from os.path import isfile, join
 
 import requests, bs4
 
-main_folder = 'html'
-if not os.path.exists(main_folder):
-    print('Creating folder: ', main_folder)
-    os.makedirs(main_folder)
-
-accounts = [
-    'filgmartin',
-    'CarlosBolsonaro'
-    ]
-
-for account in accounts:
-    account_folder = '{}/{}'.format(main_folder, account)
-    if not os.path.exists(account_folder):
-        print('Creating folder: ', account_folder)
-        os.makedirs(account_folder)
-
 log_file = 'main_log.txt'
-
 def log(message):
     fh = open(log_file, 'a')
     fh.write(datetime.datetime.now().strftime("%Y-%m-%d %H:%M") + ': ' + message + '\n')
     fh.close()
     print(message)
+
+
+fh = open('accounts.txt')
+accounts = [account for account in fh.read().split('\n') if len(account) > 5]
+fh.close()
+
+log('Accounts being screenshoted: ' + ', '.join(accounts))
+
+
+main_folder = 'html'
+if not os.path.exists(main_folder):
+    print('Creating folder: ', main_folder)
+    os.makedirs(main_folder)
+
+
+for account in accounts:
+    account_folder = '{}/{}'.format(main_folder, account)
+    if not os.path.exists(account_folder):
+        log('Creating folder: ' + account_folder)
+        os.makedirs(account_folder)
 
 
 while True:
@@ -138,7 +141,7 @@ while True:
 
         # making index.html to account folder
         html_code = '<html><body><ol>{}</ol></body></html>'
-        onlyfiles = [f for f in listdir(account_folder) if isfile(join(account_folder, f))]
+        onlyfiles = [f for f in listdir(account_folder) if (isfile(join(account_folder, f)) and 'index.html' not in f)]
         onlyfiles_code = ''
         for file in onlyfiles:
             onlyfiles_code += '<li><a href=\'{}\'>{}</a></li>'.format(file, file)
