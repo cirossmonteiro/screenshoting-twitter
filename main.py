@@ -142,6 +142,7 @@ while True:
         # making index.html to account folder
         html_code = '<html><body><ol>{}</ol></body></html>'
         onlyfiles = [f for f in listdir(account_folder) if (isfile(join(account_folder, f)) and 'index.html' not in f)]
+        onlyfiles.sort()
         onlyfiles_code = ''
         for file in onlyfiles:
             onlyfiles_code += '<li><a href=\'{}\'>{}</a></li>'.format(file, file)
